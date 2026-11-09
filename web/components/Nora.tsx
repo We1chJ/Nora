@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState, type FormEvent, type RefObject } from "react";
+import { useCallback, useEffect, useRef, useState, type FormEvent, type PointerEvent as ReactPointerEvent, type RefObject } from "react";
 import { domToJpeg } from "modern-screenshot";
 import { NoraBubble, NoraFace } from "./NoraBubble";
 import "@/app/nora.css";
@@ -9,7 +9,7 @@ import "@/app/nora.css";
 // person tapped. It never reads the page's code, labels or state.
 
 type Rect = { x: number; y: number; width: number; height: number };
-type Reply = { message: string; highlight: Rect | null; done: boolean };
+type Reply = { message: string; highlight: Rect | null; needs_answer: boolean; done: boolean };
 type Mode = "idle" | "listening" | "thinking" | "guiding" | "done";
 type ChatItem = { from: "nora" | "you"; text: string };
 // Where to draw the highlight, in the overlay's own coordinates.
@@ -35,6 +35,7 @@ function getRecognition(): RecognitionCtor | undefined {
 }
 
 const MAX_LOG = 30;
+const HOLD_MS = 350; // a press on the mic longer than this is hold-to-talk; shorter is tap-to-toggle
 const clip = (text: string) => (text.length > 590 ? `${text.slice(0, 589)}…` : text);
 const isNoraUi = (n: EventTarget | null) => n instanceof Element && !!n.closest("[data-nora-ui]");
 
@@ -63,11 +64,13 @@ export function Nora({ phoneRef }: Props) {
   const [reply, setReply] = useState<Reply | null>(null);
   const [error, setError] = useState("");
   const [chat, setChat] = useState<ChatItem[]>([]);
-  const [chatOpen, setChatOpen] = useState(false);
-  const [heard, setHeard] = useState("");
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const [tapToTalk, setTapToTalk] = useState(false);
   const [typed, setTyped] = useState("");
+  const [heard, setHeard] = useState("");
   const [micProblem, setMicProblem] = useState("");
   const [box, setBox] = useState<Box | null>(null);
+  const [keyboard, setKeyboard] = useState(0);
   const layerRef = useRef<HTMLDivElement>(null);
 
   // Nothing here is saved: the session lives in memory until it ends or the page reloads.
@@ -79,12 +82,14 @@ export function Nora({ phoneRef }: Props) {
   const recognition = useRef<Recognition | null>(null);
   const heardRef = useRef("");
   const submitOnEnd = useRef(false);
+  const micPress = useRef<{ start: number; startedHere: boolean } | null>(null);
   const chatLogRef = useRef<HTMLDivElement>(null);
 
   const setSession = (on: boolean) => {
     activeRef.current = on;
     setActive(on);
   };
+  const restingMode = (): Mode => (activeRef.current ? "guiding" : "idle");
 
   const ask = useCallback(
     async (event: string) => {
@@ -126,15 +131,18 @@ export function Nora({ phoneRef }: Props) {
         }
         setChat((c) => [...c, { from: "nora", text: data.message }]);
         if (data.done) {
-          activeRef.current = false;
-          setActive(false);
+          setSession(false);
           setMode("done");
+          setSheetOpen(false);
         } else {
           setMode("guiding");
+          // A question for the person opens the conversation so they can answer right away;
+          // a step to take keeps the screen clear with a short card instead.
+          setSheetOpen(data.needs_answer);
         }
       } catch {
         if (id !== requestId.current) return;
-        setError("Sorry, I couldn't reach Nora just now. Tap the Nora button to try again.");
+        setError("Sorry, I couldn't reach Nora just now. Please try again.");
         setMode("guiding");
       }
     },
@@ -145,11 +153,7 @@ export function Nora({ phoneRef }: Props) {
     const text = raw.trim().slice(0, 300);
     setTyped("");
     setHeard("");
-    setChatOpen(false);
-    if (!text) {
-      setMode(activeRef.current ? "guiding" : "idle");
-      return;
-    }
+    if (!text) return;
     if (!activeRef.current) {
       goal.current = text;
       log.current = [];
@@ -158,21 +162,21 @@ export function Nora({ phoneRef }: Props) {
       setSession(true);
     }
     setChat((c) => [...c, { from: "you", text }]);
+    // Close the sheet so the screen is clear while Nora looks at it.
+    setSheetOpen(false);
     ask(`Person asked: "${text}"`);
   };
 
   const startListening = () => {
     heardRef.current = "";
     setHeard("");
-    setTyped("");
     setMicProblem("");
-    setChatOpen(false);
-    setMode("listening");
+    setTapToTalk(false);
 
     const Ctor = getRecognition();
     if (!Ctor) {
-      setMicProblem("Voice isn't available in this browser. Please type instead, or tap the microphone on your keyboard.");
-      return;
+      setMicProblem("Voice isn't available here. Please type instead, or use the microphone on your keyboard.");
+      return false;
     }
     const rec = new Ctor();
     rec.lang = "en-US";
@@ -193,10 +197,12 @@ export function Nora({ phoneRef }: Props) {
     };
     rec.onend = () => {
       recognition.current = null;
-      if (submitOnEnd.current) {
-        submitOnEnd.current = false;
-        submitQuestion(heardRef.current);
-      }
+      const send = submitOnEnd.current;
+      submitOnEnd.current = false;
+      setMode(restingMode());
+      if (!send) return;
+      if (heardRef.current.trim()) submitQuestion(heardRef.current);
+      else setMicProblem((m) => m || "I didn't catch that. Try again, or type instead.");
     };
     recognition.current = rec;
     try {
@@ -204,15 +210,19 @@ export function Nora({ phoneRef }: Props) {
     } catch {
       recognition.current = null;
       setMicProblem("I couldn't start the microphone. You can type instead.");
+      return false;
     }
+    setMode("listening");
+    return true;
   };
 
-  const stopListening = () => {
+  // Stop listening and send what was heard.
+  const finishListening = () => {
     if (recognition.current) {
       submitOnEnd.current = true;
       recognition.current.stop();
     } else {
-      submitQuestion(heardRef.current || typed);
+      setMode(restingMode());
     }
   };
 
@@ -222,15 +232,50 @@ export function Nora({ phoneRef }: Props) {
     recognition.current = null;
   };
 
+  // The mic works two ways: hold it while talking and let go to send, or tap once to start
+  // and tap again to send.
+  const onMicDown = (e: ReactPointerEvent<HTMLButtonElement>) => {
+    if (e.button !== 0) return;
+    e.preventDefault();
+    try {
+      // Keep receiving the release even if the finger slides off the button.
+      e.currentTarget.setPointerCapture(e.pointerId);
+    } catch {}
+    if (recognition.current) {
+      micPress.current = { start: Date.now(), startedHere: false };
+    } else if (startListening()) {
+      micPress.current = { start: Date.now(), startedHere: true };
+    }
+  };
+  const onMicUp = () => {
+    const press = micPress.current;
+    micPress.current = null;
+    if (!press) return;
+    if (!press.startedHere || Date.now() - press.start >= HOLD_MS) finishListening();
+    else setTapToTalk(true);
+  };
+  const onMicKey = (e: React.MouseEvent<HTMLButtonElement>) => {
+    // Keyboard and screen-reader activation arrive as a click with no pointer press.
+    if (e.detail !== 0) return;
+    if (recognition.current) finishListening();
+    else if (startListening()) setTapToTalk(true);
+  };
+
   const submitTyped = (e: FormEvent) => {
     e.preventDefault();
     cancelRecognition();
     submitQuestion(typed);
   };
 
-  const cancelListening = () => {
+  const openSheet = () => {
+    setMicProblem("");
+    setSheetOpen(true);
+  };
+
+  const closeSheet = () => {
     cancelRecognition();
-    setMode(activeRef.current ? "guiding" : "idle");
+    setMode((m) => (m === "listening" ? restingMode() : m));
+    setSheetOpen(false);
   };
 
   const stopHelping = () => {
@@ -242,7 +287,7 @@ export function Nora({ phoneRef }: Props) {
     setReply(null);
     setBox(null);
     setError("");
-    setChatOpen(false);
+    setSheetOpen(false);
   };
 
   // While helping, every tap, scroll or bit of typing is a signal to look at the screen again.
@@ -291,45 +336,31 @@ export function Nora({ phoneRef }: Props) {
     };
   }, [active, ask, phoneRef]);
 
+  // Keep the sheet above the on-screen keyboard, which phones draw over the page.
+  useEffect(() => {
+    const vv = window.visualViewport;
+    if (!sheetOpen || !vv) return;
+    const update = () => setKeyboard(Math.max(0, Math.round(window.innerHeight - vv.height - vv.offsetTop)));
+    update();
+    vv.addEventListener("resize", update);
+    vv.addEventListener("scroll", update);
+    return () => {
+      vv.removeEventListener("resize", update);
+      vv.removeEventListener("scroll", update);
+      setKeyboard(0);
+    };
+  }, [sheetOpen]);
+
   useEffect(() => {
     chatLogRef.current?.scrollTo({ top: chatLogRef.current.scrollHeight });
-  }, [chat, chatOpen]);
+  }, [chat, sheetOpen]);
 
+  const listening = mode === "listening";
   const highlight = active && mode === "guiding" ? box : null;
   const cardAtTop = !!highlight && highlight.top + highlight.height / 2 > highlight.layerHeight * 0.55;
 
   let card = null;
-  if (mode === "listening") {
-    card = (
-      <div className="nora-card listening">
-        <p className="nora-card-title">{micProblem ? "⌨️ Type your question" : "🎤 Listening…"}</p>
-        {micProblem ? (
-          <p className="nora-note">{micProblem}</p>
-        ) : (
-          <>
-            <p className="nora-message">{heard || "Tell me what you need help with."}</p>
-            <p className="nora-note">Tap the red Stop button when you finish talking.</p>
-          </>
-        )}
-        <form className="nora-type-row" onSubmit={submitTyped}>
-          <input
-            value={typed}
-            onChange={(e) => setTyped(e.target.value)}
-            placeholder={micProblem ? "Type here…" : "Or type here…"}
-            maxLength={300}
-            autoFocus={!!micProblem}
-            aria-label="Type your question for Nora"
-          />
-          <button className="btn btn-primary" type="submit">
-            Send
-          </button>
-        </form>
-        <button className="link-btn" onClick={cancelListening}>
-          Cancel
-        </button>
-      </div>
-    );
-  } else if ((mode === "guiding" || mode === "done") && (reply || error)) {
+  if (!sheetOpen && (mode === "guiding" || mode === "done") && (reply || error)) {
     card = (
       <div className={`nora-card${mode === "done" ? " done" : ""}`}>
         <div className="nora-card-head">
@@ -343,8 +374,8 @@ export function Nora({ phoneRef }: Props) {
           </button>
         ) : (
           <div className="nora-card-actions">
-            <button className="btn" onClick={() => setChatOpen(true)}>
-              💬 Ask a question
+            <button className="btn" onClick={openSheet}>
+              💬 Reply
             </button>
             <button className="btn" onClick={stopHelping}>
               Stop helping
@@ -354,6 +385,14 @@ export function Nora({ phoneRef }: Props) {
       </div>
     );
   }
+
+  const hint = micProblem
+    ? micProblem
+    : listening
+      ? tapToTalk
+        ? "Listening… tap the red button when you're done."
+        : "Listening… let go to send."
+      : "Type, or hold the microphone and talk.";
 
   return (
     <div className="nora-layer" data-nora-ui ref={layerRef}>
@@ -366,34 +405,71 @@ export function Nora({ phoneRef }: Props) {
 
       {card && <div className={`nora-card-slot ${cardAtTop ? "top" : "bottom"}`}>{card}</div>}
 
-      {chatOpen && (
-        <div className="nora-chat" role="region" aria-label="Chat with Nora">
-          <header className="nora-chat-head">
-            <strong>Chat with Nora</strong>
-            <button className="icon-btn" aria-label="Close chat" onClick={() => setChatOpen(false)}>
-              ✕
+      {sheetOpen && (
+        <section className="nora-sheet" style={{ bottom: keyboard }} aria-label="Talk with Nora">
+          <header className="nora-sheet-head">
+            <NoraFace mood={listening ? "listening" : "guiding"} size={36} />
+            <strong>Nora</strong>
+            {active && (
+              <button className="nora-sheet-stop" onClick={stopHelping}>
+                Stop helping
+              </button>
+            )}
+            <button className="nora-sheet-close" aria-label="Close" onClick={closeSheet}>
+              <svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
             </button>
           </header>
-          <div className="nora-chat-log" ref={chatLogRef}>
+
+          <div className="nora-sheet-log" ref={chatLogRef}>
+            {chat.length === 0 && <p className="nora-msg nora">Hi, I&apos;m Nora. What would you like help with?</p>}
             {chat.map((c, i) => (
-              <p key={i} className={`nora-chat-msg ${c.from}`}>
+              <p key={i} className={`nora-msg ${c.from}`}>
                 {c.text}
               </p>
             ))}
           </div>
-          <form className="nora-type-row" onSubmit={submitTyped}>
-            <button type="button" className="icon-btn round" aria-label="Talk instead of typing" onClick={startListening}>
-              🎤
-            </button>
-            <input value={typed} onChange={(e) => setTyped(e.target.value)} placeholder="Type a question…" maxLength={300} aria-label="Question for Nora" />
-            <button className="btn btn-primary" type="submit">
-              Send
+
+          <form className="nora-composer" onSubmit={submitTyped}>
+            <input
+              value={listening ? heard : typed}
+              onChange={(e) => setTyped(e.target.value)}
+              readOnly={listening}
+              placeholder={listening ? "Listening…" : "Type a message…"}
+              maxLength={300}
+              enterKeyHint="send"
+              aria-label="Message for Nora"
+            />
+            {typed.trim() && !listening && (
+              <button className="nora-send" type="submit" aria-label="Send">
+                Send
+              </button>
+            )}
+            <button
+              type="button"
+              className={`nora-mic${listening ? " on" : ""}`}
+              aria-label={listening ? "Stop and send" : "Talk to Nora"}
+              aria-pressed={listening}
+              onPointerDown={onMicDown}
+              onPointerUp={onMicUp}
+              onPointerCancel={onMicUp}
+              onContextMenu={(e) => e.preventDefault()}
+              onClick={onMicKey}
+            >
+              <svg width="28" height="28" viewBox="0 0 24 24" aria-hidden="true">
+                <rect x="9" y="3" width="6" height="11" rx="3" fill="currentColor" />
+                <path d="M6 11a6 6 0 0 0 12 0M12 17v4M9 21h6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+              </svg>
             </button>
           </form>
-        </div>
+          <p className={`nora-hint${micProblem ? " problem" : ""}`} aria-live="polite">
+            {hint}
+          </p>
+        </section>
       )}
 
-      <NoraBubble mood={mode} listening={mode === "listening"} thinking={mode === "thinking"} onTap={mode === "listening" ? stopListening : startListening} />
+      <NoraBubble mood={mode} listening={false} thinking={mode === "thinking"} hidden={sheetOpen} onTap={openSheet} />
     </div>
   );
 }

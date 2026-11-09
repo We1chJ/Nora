@@ -247,3 +247,192 @@
     opacity: 1;
   }
 }
+
+/* ---------- Conversation sheet: text field with a hold-or-tap mic ---------- */
+
+.nora-sheet {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 6;
+  max-height: 62%;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border-radius: 24px 24px 0 0;
+  box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.22);
+  padding: 10px 14px calc(12px + env(safe-area-inset-bottom));
+  animation: nora-sheet-up 0.25s ease-out;
+}
+
+@keyframes nora-sheet-up {
+  from {
+    transform: translateY(40%);
+    opacity: 0;
+  }
+}
+
+.nora-sheet-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 2px 0 8px;
+  border-bottom: 1px solid #eee;
+}
+
+.nora-sheet-head strong {
+  font-size: 1.15em;
+  color: #3a2a12;
+  flex: 1;
+}
+
+.nora-sheet-stop {
+  font: inherit;
+  font-size: 0.85em;
+  font-weight: 700;
+  color: #b3261e;
+  background: #fdecea;
+  border: none;
+  border-radius: 999px;
+  padding: 8px 14px;
+}
+
+.nora-sheet-close {
+  width: 44px;
+  height: 44px;
+  border: none;
+  border-radius: 50%;
+  background: #f2f2f4;
+  color: #333;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nora-sheet-log {
+  flex: 1;
+  min-height: 80px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 2px;
+}
+
+.nora-msg {
+  margin: 0;
+  max-width: 85%;
+  padding: 10px 14px;
+  border-radius: 18px;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.nora-msg.nora {
+  align-self: flex-start;
+  background: #fff4e3;
+  color: #3a2a12;
+  border-bottom-left-radius: 6px;
+}
+
+.nora-msg.you {
+  align-self: flex-end;
+  background: #2f6fde;
+  color: #fff;
+  border-bottom-right-radius: 6px;
+}
+
+.nora-composer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.nora-composer input {
+  flex: 1;
+  min-width: 0;
+  height: 54px;
+  padding: 0 18px;
+  font: inherit;
+  font-size: max(18px, 1em); /* 16px+ stops iPhones zooming in on focus */
+  border: 2px solid #d9d9df;
+  border-radius: 27px;
+  background: #fafafc;
+  color: #1b1b1b;
+}
+
+.nora-composer input:focus {
+  outline: none;
+  border-color: #f2a33a;
+  background: #fff;
+}
+
+.nora-send {
+  height: 54px;
+  padding: 0 18px;
+  border: none;
+  border-radius: 27px;
+  background: #2f6fde;
+  color: #fff;
+  font: inherit;
+  font-weight: 800;
+}
+
+.nora-mic {
+  flex: none;
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  border: none;
+  background: #f2a33a;
+  color: #3a2a12;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  box-shadow: 0 4px 10px rgba(120, 70, 10, 0.3);
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+
+.nora-mic:active {
+  transform: scale(0.94);
+}
+
+.nora-mic.on {
+  background: #d33a2c;
+  color: #fff;
+  transform: scale(1.08);
+  animation: nora-listen 1.2s ease-out infinite;
+}
+
+.nora-hint {
+  margin: 8px 4px 0;
+  font-size: 0.85em;
+  color: #666;
+  text-align: center;
+}
+
+.nora-hint.problem {
+  color: #b3261e;
+  font-weight: 700;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nora-sheet,
+  .nora-mic.on {
+    animation: none;
+  }
+}
+
+@keyframes nora-listen {
+  0% {
+    box-shadow: 0 0 0 0 rgba(211, 58, 44, 0.55);
+  }
+  100% {
+    box-shadow: 0 0 0 22px rgba(211, 58, 44, 0);
+  }
+}

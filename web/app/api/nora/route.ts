@@ -18,6 +18,7 @@ const ReplySchema = z.object({
   highlight: z
     .object({ x: z.number(), y: z.number(), width: z.number(), height: z.number() })
     .nullable(),
+  needs_answer: z.boolean(),
   done: z.boolean(),
 });
 
@@ -28,6 +29,7 @@ Each turn you receive the person's goal in their own words, a log of what has ha
 Reply with:
 - message: what to say to the person now, usually the single next step.
 - highlight: a box (x, y, width, height in screenshot pixels) drawn tightly around the one thing they should tap or type in next. Be precise: the box should cover that button, link, box or picture and nothing else. Use null when there is nothing to tap: when you ask a question, answer a question, ask them to scroll, or the task is finished.
+- needs_answer: true when your message asks the person a question and you're waiting for their reply (for example, which event or which friend). Their reply box will open for them.
 - done: true only when the screenshot shows the goal is fully complete.
 
 How to guide:
@@ -86,6 +88,7 @@ export async function POST(request: Request) {
       return Response.json({
         message: "Sorry, I can't help with that one. Tap the Nora button and ask me something else.",
         highlight: null,
+        needs_answer: false,
         done: false,
       });
     }

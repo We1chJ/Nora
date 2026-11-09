@@ -59,12 +59,13 @@ type Props = {
   mood: FaceMood;
   listening: boolean;
   thinking: boolean;
+  hidden?: boolean; // kept mounted while hidden so it remembers where it was dragged
   onTap: () => void;
 };
 
 // A floating bubble: tap it, drag it anywhere, let go and it snaps to the nearest side.
 // Push it against an edge and it tucks in, with its face peeking out.
-export function NoraBubble({ mood, listening, thinking, onTap }: Props) {
+export function NoraBubble({ mood, listening, thinking, hidden = false, onTap }: Props) {
   const wrapRef = useRef<HTMLDivElement>(null);
   const [area, setArea] = useState({ w: 0, h: 0 });
   const [spot, setSpot] = useState<Spot>({ side: "right", y: -1, tucked: false });
@@ -155,7 +156,7 @@ export function NoraBubble({ mood, listening, thinking, onTap }: Props) {
     <div
       ref={wrapRef}
       className={`nora-bubble-wrap${drag ? " dragging" : ""}${placed ? "" : " still"}`}
-      style={{ left: x, top: y, visibility: area.w ? "visible" : "hidden" }}
+      style={{ left: x, top: y, visibility: area.w && !hidden ? "visible" : "hidden" }}
     >
       <button
         className={`nora-bubble${listening ? " listening" : ""}${spot.tucked && !drag ? " tucked" : ""}`}
