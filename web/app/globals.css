@@ -372,34 +372,6 @@ p {
   border-bottom: 1px solid var(--line);
 }
 
-.drawer {
-  background: var(--surface);
-  width: 78%;
-  height: 100%;
-  padding: 20px 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.drawer h2 {
-  font-size: calc(1.375 * var(--u));
-  padding: 0 10px 12px;
-}
-
-.drawer-item {
-  display: flex;
-  justify-content: space-between;
-  padding: 16px 12px;
-  border-radius: 12px;
-  font-size: calc(1.1875 * var(--u));
-}
-
-.drawer-item.active {
-  background: #e7efff;
-  font-weight: 700;
-}
-
 /* ---------- Home ---------- */
 
 .home {
@@ -494,9 +466,8 @@ p {
   font-size: 72px;
 }
 
-/* ---------- Mail ---------- */
+/* ---------- Shared list rows (Messages) ---------- */
 
-.email-row,
 .thread-row {
   display: flex;
   gap: 12px;
@@ -538,7 +509,6 @@ p {
   font-size: calc(1.0625 * var(--u));
 }
 
-.email-row-subject,
 .email-row-preview {
   font-size: calc(1 * var(--u));
   white-space: nowrap;
@@ -548,63 +518,6 @@ p {
 
 .email-row-preview {
   color: var(--muted);
-}
-
-.email-row.unread .email-row-from,
-.email-row.unread .email-row-subject {
-  font-weight: 700;
-}
-
-.email-row.unread .avatar {
-  background: var(--blue);
-  color: #fff;
-}
-
-.email-subject {
-  font-size: calc(1.4375 * var(--u));
-  line-height: 1.3;
-}
-
-.email-from {
-  font-size: calc(1 * var(--u));
-  word-break: break-all;
-}
-
-.email-body {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  line-height: 1.5;
-}
-
-.btn-scam {
-  background: #ffcc00;
-  color: #000;
-  font-size: calc(1.25 * var(--u));
-  font-weight: 800;
-}
-
-.btn-ad {
-  background: #ff6a3d;
-  color: #fff;
-}
-
-.email-footer {
-  margin-top: 30px;
-  font-size: calc(0.8125 * var(--u));
-  color: #8a909c;
-  line-height: 1.5;
-}
-
-.email-footer .link-btn {
-  color: #8a909c;
-}
-
-.info-banner {
-  background: #e7efff;
-  border-radius: 10px;
-  padding: 10px 12px;
-  font-size: calc(1 * var(--u));
 }
 
 /* ---------- Photos ---------- */

@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useRef, useState } from "react";
-import { INITIAL_EMAILS, INITIAL_PHOTOS, INITIAL_THREADS, type Account, type ChatMessage, type Folder, type Registration } from "@/lib/data";
+import { INITIAL_EMAILS, INITIAL_PHOTOS, INITIAL_THREADS, type Account, type ChatMessage, type Registration } from "@/lib/data";
 import { Home } from "./apps/Home";
 import { EventsSite } from "./apps/Events";
 import { MailApp } from "./apps/Mail";
@@ -104,9 +104,8 @@ export function Demo() {
               route={route}
               go={go}
               emails={emails}
+              updateEmails={setEmails}
               unsubscribed={unsubscribed}
-              moveEmail={(id, folder: Folder) => setEmails((es) => es.map((e) => (e.id === id ? { ...e, folder } : e)))}
-              markRead={(id) => setEmails((es) => es.map((e) => (e.id === id ? { ...e, read: true } : e)))}
               unsubscribe={(sender) => setUnsubscribed((u) => (u.includes(sender) ? u : [...u, sender]))}
               toast={toast}
             />

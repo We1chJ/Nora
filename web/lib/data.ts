@@ -174,7 +174,8 @@ export const EVENTS: EventItem[] = [
 ];
 
 export type EmailKind = "personal" | "spam" | "ad";
-export type Folder = "inbox" | "spam" | "trash";
+// "archive" is Gmail's All mail; "deleted" means gone for good (emptied from Spam or Trash).
+export type Folder = "inbox" | "archive" | "spam" | "trash" | "deleted";
 
 export type Email = {
   id: string;
@@ -187,15 +188,19 @@ export type Email = {
   cta?: string;
   folder: Folder;
   read: boolean;
+  starred: boolean;
+  time: string;
 };
 
+// Newest first. The practice phone's "today" is Monday, November 9.
+// Tasks: the Prize Center email is spam to delete; ShopMart Deals sends several ads to unsubscribe from.
 export const INITIAL_EMAILS: Email[] = [
   {
     id: "m1",
     from: "Linda Chen",
     address: "linda.chen@mailbox.example",
     subject: "Photos from Sunday 🌷",
-    preview: "Hi Mom! It was so nice to see you...",
+    preview: "Hi Mom! It was so nice to see you on Sunday...",
     body: [
       "Hi Mom!",
       "It was so nice to see you on Sunday. The kids haven't stopped talking about your pie. I'll send you the photos in Messages later this week.",
@@ -204,13 +209,15 @@ export const INITIAL_EMAILS: Email[] = [
     kind: "personal",
     folder: "inbox",
     read: false,
+    starred: false,
+    time: "9:12 AM",
   },
   {
     id: "m2",
     from: "Prize Center",
     address: "winner@prize-center-claims.biz",
     subject: "🎉 CONGRATULATIONS! You WON a $1,000 Gift Card",
-    preview: "You have been selected as our lucky winner...",
+    preview: "Dear Valued Customer, you have been selected as our lucky winner...",
     body: [
       "Dear Valued Customer,",
       "You have been selected as our LUCKY WINNER of a $1,000 gift card! To receive your prize, confirm your bank details within 24 hours.",
@@ -220,29 +227,33 @@ export const INITIAL_EMAILS: Email[] = [
     cta: "CLAIM MY PRIZE",
     folder: "inbox",
     read: false,
+    starred: false,
+    time: "8:47 AM",
   },
   {
     id: "m3",
     from: "ShopMart Deals",
     address: "deals@shopmart-mail.example",
-    subject: "This Week Only: 40% Off Kitchen Essentials",
-    preview: "Pots, pans, and more at our lowest prices...",
+    subject: "🎁 Early Black Friday starts now — up to 60% off",
+    preview: "Our biggest savings of the year are here early. Shop TVs, kitchen...",
     body: [
-      "Big savings are here!",
-      "Get 40% off pots, pans, mixing bowls, and more. Prices this low won't last — shop the sale today.",
+      "Our biggest savings of the year are here early!",
+      "Shop up to 60% off TVs, kitchen appliances, bedding and more. Hurry — these deals end Sunday at midnight.",
       "Free shipping on orders over $35.",
     ],
     kind: "ad",
-    cta: "SHOP THE SALE",
+    cta: "SHOP EARLY DEALS",
     folder: "inbox",
-    read: true,
+    read: false,
+    starred: false,
+    time: "7:30 AM",
   },
   {
     id: "m4",
     from: "Dr. Patel's Office",
     address: "appointments@patelfamilymed.example",
     subject: "Appointment reminder: Thursday 9:30 AM",
-    preview: "This is a reminder of your upcoming visit...",
+    preview: "Hello, this is a friendly reminder of your appointment with Dr. Patel...",
     body: [
       "Hello,",
       "This is a friendly reminder of your appointment with Dr. Patel on Thursday at 9:30 AM.",
@@ -251,13 +262,15 @@ export const INITIAL_EMAILS: Email[] = [
     kind: "personal",
     folder: "inbox",
     read: false,
+    starred: false,
+    time: "Nov 8",
   },
   {
     id: "m5",
     from: "Account Security Team",
     address: "security-alert@acc0unt-verify.net",
     subject: "URGENT: Your account will be suspended",
-    preview: "We detected unusual activity. Verify now...",
+    preview: "We detected unusual activity on your account. Verify now...",
     body: [
       "We detected unusual activity on your account.",
       "Your account will be SUSPENDED in 12 hours unless you verify your password and card number using the link below.",
@@ -267,13 +280,15 @@ export const INITIAL_EMAILS: Email[] = [
     cta: "VERIFY MY ACCOUNT",
     folder: "inbox",
     read: false,
+    starred: false,
+    time: "Nov 8",
   },
   {
     id: "m6",
     from: "Garden & Home Weekly",
     address: "news@gardenhomeweekly.example",
     subject: "New arrivals for fall planting 🍂",
-    preview: "Bulbs, mums, and cozy outdoor decor...",
+    preview: "Bulbs, mums, and cozy outdoor decor. Members save an extra 10%...",
     body: [
       "Fall is here!",
       "Browse our new selection of tulip bulbs, mums, and cozy outdoor decor. Members save an extra 10% this weekend.",
@@ -282,27 +297,63 @@ export const INITIAL_EMAILS: Email[] = [
     cta: "BROWSE NEW ARRIVALS",
     folder: "inbox",
     read: true,
+    starred: false,
+    time: "Nov 8",
+  },
+  {
+    id: "m10",
+    from: "ShopMart Deals",
+    address: "deals@shopmart-mail.example",
+    subject: "Cozy blankets & throws from $12.99",
+    preview: "Stay warm this winter with our softest blankets ever...",
+    body: [
+      "Stay warm this winter!",
+      "Our softest fleece blankets and throws start at just $12.99. Dozens of colors to choose from.",
+      "Members get an extra 10% off with code COZY10.",
+    ],
+    kind: "ad",
+    cta: "SHOP BLANKETS",
+    folder: "inbox",
+    read: true,
+    starred: false,
+    time: "Nov 7",
   },
   {
     id: "m7",
     from: "Maple Grove Library",
     address: "holds@maplegrovelibrary.example",
     subject: "Your book is ready for pickup",
-    preview: "The book you reserved is waiting at the desk...",
+    preview: "Good news! The book you reserved is waiting at the front desk...",
+    body: ["Good news!", "The book you reserved is waiting for you at the front desk. We'll hold it for 7 days."],
+    kind: "personal",
+    folder: "inbox",
+    read: true,
+    starred: true,
+    time: "Nov 7",
+  },
+  {
+    id: "m11",
+    from: "Maple Grove Community Center",
+    address: "events@maplegrovecenter.org",
+    subject: "Thanksgiving Luncheon — registration is open",
+    preview: "Join your neighbors for a traditional Thanksgiving lunch...",
     body: [
-      "Good news!",
-      "The book you reserved is waiting for you at the front desk. We'll hold it for 7 days.",
+      "Join your neighbors for a traditional Thanksgiving lunch in the Main Hall.",
+      "Registration is now open on our website. Spaces fill up quickly, so sign up soon!",
+      "Warm wishes, the Maple Grove Community Center team",
     ],
     kind: "personal",
     folder: "inbox",
     read: true,
+    starred: false,
+    time: "Nov 6",
   },
   {
     id: "m8",
     from: "Rx Discount Pharmacy",
     address: "offers@cheap-rx-now.biz",
     subject: "Cheap m3ds without prescription!!!",
-    preview: "Save 90% on all medicines, no doctor needed...",
+    preview: "SAVE 90% ON ALL MEDICINES!!! No doctor needed...",
     body: [
       "SAVE 90% ON ALL MEDICINES!!!",
       "No prescription needed. Fast shipping from overseas. Pay with gift cards for extra savings.",
@@ -311,21 +362,56 @@ export const INITIAL_EMAILS: Email[] = [
     cta: "ORDER NOW",
     folder: "inbox",
     read: false,
+    starred: false,
+    time: "Nov 6",
   },
   {
     id: "m9",
     from: "TravelNow",
     address: "offers@travelnow-mail.example",
     subject: "Last-minute cruise deals just for you",
-    preview: "Sail the Caribbean from $499 per person...",
-    body: [
-      "Your next adventure is waiting!",
-      "Sail the Caribbean from just $499 per person. Limited cabins available at this price.",
-    ],
+    preview: "Sail the Caribbean from $499 per person. Limited cabins...",
+    body: ["Your next adventure is waiting!", "Sail the Caribbean from just $499 per person. Limited cabins available at this price."],
     kind: "ad",
     cta: "SEE CRUISE DEALS",
     folder: "inbox",
     read: true,
+    starred: false,
+    time: "Nov 5",
+  },
+  {
+    id: "m12",
+    from: "ShopMart Deals",
+    address: "deals@shopmart-mail.example",
+    subject: "This Week Only: 40% Off Kitchen Essentials",
+    preview: "Pots, pans, mixing bowls and more at our lowest prices...",
+    body: [
+      "Big savings are here!",
+      "Get 40% off pots, pans, mixing bowls, and more. Prices this low won't last — shop the sale today.",
+    ],
+    kind: "ad",
+    cta: "SHOP THE SALE",
+    folder: "inbox",
+    read: true,
+    starred: false,
+    time: "Nov 4",
+  },
+  {
+    id: "m13",
+    from: "Tom Briggs",
+    address: "tom.briggs@mailbox.example",
+    subject: "Walking group next Monday",
+    preview: "Hi neighbor, we're meeting at the front entrance at 8:30...",
+    body: [
+      "Hi neighbor,",
+      "We're meeting at the front entrance of the community center at 8:30 next Monday. Hope you can join us!",
+      "Tom",
+    ],
+    kind: "personal",
+    folder: "inbox",
+    read: true,
+    starred: false,
+    time: "Nov 3",
   },
 ];
 

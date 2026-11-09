@@ -1,0 +1,716 @@
+/* Gmail-style Mail app. Every class starts with gm- so nothing leaks into the other apps. */
+
+.gm,
+.gm-dialog-backdrop,
+.gm-snackbar {
+  --gm-blue: #0b57d0;
+  --gm-text: #1f1f1f;
+  --gm-muted: #444746;
+  --gm-pill: #e9eef6;
+  --gm-selected: #c2e7ff;
+}
+
+.gm {
+  background: #fff;
+  color: var(--gm-text);
+  font-size: calc(1 * var(--u));
+  position: relative;
+}
+
+.gm-spacer {
+  flex: 1;
+}
+
+.gm-muted {
+  color: var(--gm-muted);
+  font-size: calc(0.875 * var(--u));
+}
+
+.gm-icon-btn {
+  flex: none;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--gm-muted);
+}
+
+.gm-icon-btn:active {
+  background: rgba(68, 71, 70, 0.12);
+}
+
+/* ---------- Top bars ---------- */
+
+.gm-header {
+  padding: 8px 12px 4px;
+}
+
+.gm-search-pill {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  height: 52px;
+  padding: 0 6px 0 2px;
+  border-radius: 28px;
+  background: var(--gm-pill);
+}
+
+.gm-search-text {
+  flex: 1;
+  height: 100%;
+  text-align: left;
+  font-size: calc(1.0625 * var(--u));
+  color: var(--gm-muted);
+}
+
+.gm-account {
+  flex: none;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: #7b1fa2;
+  color: #fff;
+  font-weight: 600;
+  font-size: calc(1 * var(--u));
+}
+
+.gm-topbar {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  min-height: 56px;
+  padding: 4px 4px;
+  background: #fff;
+}
+
+.gm-selectbar {
+  background: #e8f0fe;
+}
+
+.gm-select-count {
+  font-size: calc(1.25 * var(--u));
+  font-weight: 500;
+  padding-left: 8px;
+}
+
+.gm-searchbar {
+  border-bottom: 1px solid #e0e3e7;
+}
+
+.gm-search-input {
+  flex: 1;
+  min-width: 0;
+  height: 44px;
+  border: none;
+  outline: none;
+  font-size: calc(1.125 * var(--u));
+  background: transparent;
+}
+
+/* ---------- List ---------- */
+
+.app-body.gm-list {
+  padding: 0 0 120px;
+  gap: 0;
+}
+
+.gm-box-label {
+  padding: 10px 16px 6px;
+  font-size: calc(0.875 * var(--u));
+  font-weight: 500;
+  color: var(--gm-muted);
+}
+
+.gm-empty {
+  padding: 48px 24px;
+  text-align: center;
+  color: var(--gm-muted);
+}
+
+.gm-row {
+  display: flex;
+  gap: 14px;
+  padding: 10px 14px 10px 12px;
+  text-align: left;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.gm-row:active {
+  background: #f2f2f2;
+}
+
+.gm-row.selected {
+  background: var(--gm-selected);
+}
+
+.gm-row-avatar {
+  flex: none;
+  padding-top: 4px;
+}
+
+.gm-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: calc(1.125 * var(--u));
+  font-weight: 500;
+}
+
+.gm-avatar-check {
+  background: var(--gm-blue);
+}
+
+.gm-row-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.gm-row-top,
+.gm-row-bottom {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.gm-row-from {
+  flex: 1;
+  min-width: 0;
+  font-size: calc(1.0625 * var(--u));
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--gm-muted);
+}
+
+.gm-row-time {
+  flex: none;
+  font-size: calc(0.8125 * var(--u));
+  color: var(--gm-muted);
+}
+
+.gm-row-subject {
+  font-size: calc(0.9375 * var(--u));
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--gm-muted);
+}
+
+.gm-row-preview {
+  flex: 1;
+  min-width: 0;
+  font-size: calc(0.9375 * var(--u));
+  color: var(--gm-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.gm-row.unread .gm-row-from,
+.gm-row.unread .gm-row-subject,
+.gm-row.unread .gm-row-time {
+  font-weight: 700;
+  color: var(--gm-text);
+}
+
+.gm-star {
+  flex: none;
+  color: var(--gm-muted);
+  display: inline-flex;
+  padding: 4px;
+}
+
+.gm-star.small {
+  margin: -6px -4px -6px 0;
+}
+
+.gm-star.on {
+  color: #f4b400;
+}
+
+.gm-compose {
+  position: absolute;
+  right: 16px;
+  bottom: 18px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 56px;
+  padding: 0 20px 0 16px;
+  border-radius: 16px;
+  background: var(--gm-selected);
+  color: #001d35;
+  font-weight: 600;
+  font-size: calc(1 * var(--u));
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  z-index: 2;
+}
+
+/* ---------- Drawer ---------- */
+
+.gm-drawer-backdrop,
+.gm-menu-backdrop,
+.gm-dialog-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 30;
+}
+
+.gm-drawer-backdrop,
+.gm-dialog-backdrop {
+  background: rgba(0, 0, 0, 0.32);
+}
+
+.gm-drawer {
+  width: 82%;
+  max-width: 320px;
+  height: 100%;
+  overflow-y: auto;
+  background: #fff;
+  padding: 10px 12px 24px 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.gm-drawer-title {
+  padding: 12px 24px 16px;
+  font-size: calc(1.375 * var(--u));
+  font-weight: 500;
+  color: #c5221f;
+}
+
+.gm-drawer-item {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  min-height: 52px;
+  padding: 0 16px 0 24px;
+  border-radius: 0 26px 26px 0;
+  font-size: calc(1 * var(--u));
+  color: var(--gm-text);
+  text-align: left;
+}
+
+.gm-drawer-item svg {
+  color: var(--gm-muted);
+}
+
+.gm-drawer-item span:first-of-type {
+  flex: 1;
+}
+
+.gm-drawer-item.active {
+  background: #d3e3fd;
+  font-weight: 700;
+}
+
+.gm-drawer-item.active svg {
+  color: #041e49;
+}
+
+.gm-drawer-count {
+  font-size: calc(0.875 * var(--u));
+  font-weight: 600;
+}
+
+.gm-drawer hr {
+  border: none;
+  border-top: 1px solid #e0e3e7;
+  margin: 8px 0 8px 24px;
+}
+
+/* ---------- Menus and dialogs ---------- */
+
+.gm-menu {
+  position: absolute;
+  right: 8px;
+  min-width: 220px;
+  max-width: 80%;
+  padding: 8px 0;
+  background: #fff;
+  border-radius: 6px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+  display: flex;
+  flex-direction: column;
+}
+
+.gm-menu-item {
+  text-align: left;
+  min-height: 48px;
+  padding: 0 20px;
+  font-size: calc(1 * var(--u));
+  color: var(--gm-text);
+}
+
+.gm-menu-item:active {
+  background: #f1f3f4;
+}
+
+.gm-dialog-backdrop {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.gm-dialog {
+  width: 100%;
+  max-width: 340px;
+  background: #f3f5f9;
+  border-radius: 28px;
+  padding: 24px 24px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  line-height: 1.45;
+}
+
+.gm-dialog h2 {
+  font-size: calc(1.375 * var(--u));
+  font-weight: 400;
+}
+
+.gm-dialog p {
+  color: var(--gm-muted);
+}
+
+.gm-dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 4px;
+}
+
+.gm-dialog-actions.stacked {
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.gm-text-btn {
+  min-height: 44px;
+  padding: 0 14px;
+  border-radius: 22px;
+  color: var(--gm-blue);
+  font-weight: 600;
+  font-size: calc(0.9375 * var(--u));
+  text-align: right;
+}
+
+.gm-move-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.gm-move-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-height: 48px;
+  font-size: calc(1 * var(--u));
+  color: var(--gm-text);
+}
+
+.gm-snackbar {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 86px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 48px;
+  padding: 6px 8px 6px 16px;
+  border-radius: 4px;
+  background: #313033;
+  color: #f4eff4;
+  font-size: calc(0.9375 * var(--u));
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+  z-index: 25;
+}
+
+.gm-snackbar span {
+  flex: 1;
+}
+
+.gm-snack-undo {
+  color: #a8c7fa;
+  font-weight: 600;
+  padding: 10px 12px;
+}
+
+/* ---------- Reading an email ---------- */
+
+.app-body.gm-body {
+  padding: 4px 0 120px;
+  gap: 0;
+}
+
+.gm-subject-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 4px 8px 12px 16px;
+}
+
+.gm-subject {
+  flex: 1;
+  font-size: calc(1.375 * var(--u));
+  font-weight: 400;
+  line-height: 1.3;
+}
+
+.gm-chip {
+  display: inline-block;
+  vertical-align: middle;
+  font-size: calc(0.75 * var(--u));
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: #e8eaed;
+  color: var(--gm-muted);
+}
+
+.gm-sender-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 4px 0 4px 16px;
+}
+
+.gm-sender-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  overflow-wrap: anywhere;
+}
+
+.gm-to-me {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  font-size: calc(0.875 * var(--u));
+  color: var(--gm-muted);
+}
+
+.gm-unsub-chip {
+  align-self: flex-start;
+  margin: 6px 16px 0 68px;
+  padding: 6px 16px;
+  border: 1px solid #747775;
+  border-radius: 8px;
+  font-size: calc(0.875 * var(--u));
+  font-weight: 600;
+  color: var(--gm-blue);
+}
+
+.gm-banner {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  margin: 4px 16px 12px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: #f1f3f4;
+  font-size: calc(0.9375 * var(--u));
+  line-height: 1.4;
+}
+
+.gm-banner .gm-text-btn {
+  padding: 0;
+  min-height: 36px;
+}
+
+.gm-banner-ok {
+  margin-top: 8px;
+  background: #e6f4ea;
+  color: #0d652d;
+}
+
+.gm-folder-banner {
+  margin-top: 0;
+}
+
+.gm-message {
+  padding: 18px 16px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  line-height: 1.5;
+  font-size: calc(1 * var(--u));
+}
+
+.gm-cta {
+  align-self: center;
+  margin: 8px 0;
+  padding: 14px 26px;
+  border-radius: 6px;
+  background: #e8710a;
+  color: #fff;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+.gm-cta.scam {
+  background: #d93025;
+}
+
+.gm-mail-footer {
+  margin-top: 18px;
+  padding-top: 12px;
+  border-top: 1px solid #e0e3e7;
+  text-align: center;
+  font-size: calc(0.75 * var(--u));
+  line-height: 1.6;
+  color: #80868b;
+}
+
+.gm-footer-link {
+  font-size: calc(0.75 * var(--u));
+  color: #80868b;
+  text-decoration: underline;
+}
+
+.gm-reply-row {
+  display: flex;
+  gap: 8px;
+  padding: 16px;
+  flex-wrap: wrap;
+}
+
+.gm-reply-btn {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 0 10px;
+  border: 1px solid #747775;
+  border-radius: 22px;
+  font-size: calc(0.875 * var(--u));
+  font-weight: 600;
+  color: var(--gm-muted);
+  white-space: nowrap;
+}
+
+/* ---------- Compose ---------- */
+
+.gm-compose-title {
+  font-size: calc(1.25 * var(--u));
+  padding-left: 4px;
+}
+
+.app-body.gm-compose-body {
+  padding: 0 0 120px;
+  gap: 0;
+}
+
+.gm-compose-field {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 52px;
+  padding: 0 16px;
+  border-bottom: 1px solid #e0e3e7;
+  color: var(--gm-muted);
+}
+
+.gm-compose-field input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  outline: none;
+  font-size: calc(1.0625 * var(--u));
+  background: transparent;
+  color: var(--gm-text);
+}
+
+.gm-compose-text {
+  min-height: 200px;
+  padding: 16px;
+  border: none;
+  outline: none;
+  resize: none;
+  font: inherit;
+  font-size: calc(1.0625 * var(--u));
+}
+
+.gm-practice {
+  padding: 0 16px;
+}
+
+/* ---------- A mailing list's unsubscribe page ---------- */
+
+.gm-webbar {
+  border-bottom: 1px solid #e0e3e7;
+  background: #f8f9fa;
+}
+
+.gm-webbar-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  font-size: calc(0.875 * var(--u));
+  line-height: 1.3;
+}
+
+.gm-webbar-text span {
+  color: var(--gm-muted);
+  font-size: calc(0.8125 * var(--u));
+}
+
+.app-body.gm-unsub-page {
+  padding: 0 0 120px;
+  gap: 16px;
+  text-align: center;
+}
+
+.gm-unsub-brand {
+  padding: 22px 16px;
+  color: #fff;
+  font-size: calc(1.5 * var(--u));
+  font-weight: 800;
+}
+
+.gm-unsub-page h1 {
+  font-size: calc(1.5 * var(--u));
+  padding: 8px 20px 0;
+}
+
+.gm-unsub-page p {
+  padding: 0 24px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.gm-unsub-primary,
+.gm-unsub-secondary {
+  margin: 0 24px;
+  min-height: 52px;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: calc(1.0625 * var(--u));
+}
+
+.gm-unsub-primary {
+  background: #1f1f1f;
+  color: #fff;
+}
+
+.gm-unsub-secondary {
+  border: 2px solid #1f1f1f;
+}
