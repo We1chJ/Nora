@@ -210,11 +210,6 @@ p {
   font-size: 22px;
 }
 
-.icon-btn.send {
-  background: var(--blue);
-  color: #fff;
-}
-
 .icon-spacer {
   width: 44px;
 }
@@ -466,60 +461,6 @@ p {
   font-size: 72px;
 }
 
-/* ---------- Shared list rows (Messages) ---------- */
-
-.thread-row {
-  display: flex;
-  gap: 12px;
-  align-items: flex-start;
-  text-align: left;
-  padding: 14px 16px;
-  border-bottom: 1px solid var(--line);
-  width: 100%;
-}
-
-.avatar {
-  flex: none;
-  width: 42px;
-  height: 42px;
-  border-radius: 50%;
-  background: #dfe6f3;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
-  color: #34405a;
-}
-
-.avatar.big {
-  width: 50px;
-  height: 50px;
-  font-size: 26px;
-}
-
-.email-row-text {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 0;
-  flex: 1;
-}
-
-.email-row-from {
-  font-size: calc(1.0625 * var(--u));
-}
-
-.email-row-preview {
-  font-size: calc(1 * var(--u));
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.email-row-preview {
-  color: var(--muted);
-}
-
 /* ---------- Photos ---------- */
 
 .photo-grid {
@@ -599,97 +540,6 @@ p {
   padding: 8px 16px;
   background: var(--surface);
   border-top: 1px solid var(--line);
-}
-
-/* ---------- Messages ---------- */
-
-.chat-body {
-  gap: 8px;
-  padding-bottom: 20px;
-}
-
-.bubble {
-  max-width: 78%;
-  padding: 10px 14px;
-  border-radius: 20px;
-  font-size: calc(1.125 * var(--u));
-  line-height: 1.35;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.bubble.them {
-  align-self: flex-start;
-  background: #e9e9ee;
-}
-
-.bubble.me {
-  align-self: flex-end;
-  background: var(--blue);
-  color: #fff;
-}
-
-.bubble-photos {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-}
-
-.composer {
-  border-top: 1px solid var(--line);
-  padding: 8px 10px 100px;
-  background: var(--surface);
-}
-
-.composer-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.composer-input {
-  flex: 1;
-  min-width: 0;
-  min-height: 44px;
-  border: 2px solid #c7ccd6;
-  border-radius: 22px;
-  padding: 8px 14px;
-  font-size: calc(1.0625 * var(--u));
-}
-
-.attachments {
-  display: flex;
-  gap: 8px;
-  padding: 6px 0 10px;
-  flex-wrap: wrap;
-}
-
-.attachment {
-  position: relative;
-}
-
-.remove-attachment {
-  position: absolute;
-  top: -6px;
-  right: -6px;
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  background: #333;
-  color: #fff;
-  font-size: calc(1 * var(--u));
-  line-height: 1;
-}
-
-.picker {
-  position: absolute;
-  inset: 0;
-  background: var(--surface);
-  z-index: 30;
-  display: flex;
-  flex-direction: column;
-  overflow-y: auto;
 }
 
 /* ---------- Nora ---------- */

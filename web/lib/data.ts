@@ -415,74 +415,8 @@ export const INITIAL_EMAILS: Email[] = [
   },
 ];
 
-export type Photo = {
-  id: string;
-  emoji: string;
-  bg: string;
-  title: string;
-  date: string;
-};
-
-// Duplicates share the same picture, title and date, like copies saved twice on a real phone.
-export const INITIAL_PHOTOS: Photo[] = [
-  { id: "p1", emoji: "🌅", bg: "#f6b27a", title: "Sunset at the lake", date: "June 2" },
-  { id: "p2", emoji: "🌅", bg: "#f6b27a", title: "Sunset at the lake", date: "June 2" },
-  { id: "p3", emoji: "🐶", bg: "#b9d98c", title: "Buddy in the yard", date: "June 5" },
-  { id: "p4", emoji: "🎂", bg: "#f4a6c0", title: "Birthday cake", date: "June 12" },
-  { id: "p5", emoji: "🌸", bg: "#d7c4f2", title: "Spring flowers", date: "June 20" },
-  { id: "p6", emoji: "🎂", bg: "#f4a6c0", title: "Birthday cake", date: "June 12" },
-  { id: "p7", emoji: "👨‍👩‍👧", bg: "#9fd3e6", title: "Family picnic", date: "July 4" },
-  { id: "p8", emoji: "👨‍👩‍👧", bg: "#9fd3e6", title: "Family picnic", date: "July 4" },
-  { id: "p9", emoji: "🏞️", bg: "#a8c7a0", title: "Mountain trail", date: "July 18" },
-  { id: "p10", emoji: "👨‍👩‍👧", bg: "#9fd3e6", title: "Family picnic", date: "July 4" },
-  { id: "p11", emoji: "🐱", bg: "#e8d3a9", title: "Whiskers napping", date: "August 9" },
-  { id: "p12", emoji: "🥧", bg: "#e9c08f", title: "Apple pie", date: "August 30" },
-];
-
-export type ChatMessage = {
-  id: string;
-  fromMe: boolean;
-  text?: string;
-  photoIds?: string[];
-};
-
-export type Thread = {
-  id: string;
-  name: string;
-  avatar: string;
-  messages: ChatMessage[];
-};
-
-export const INITIAL_THREADS: Thread[] = [
-  {
-    id: "linda",
-    name: "Linda (daughter)",
-    avatar: "👩",
-    messages: [
-      { id: "l1", fromMe: false, text: "Hi Mom! How was your week?" },
-      { id: "l2", fromMe: true, text: "Very good. I went to the garden club." },
-      { id: "l3", fromMe: false, text: "That sounds lovely! Send me some pictures sometime 😊" },
-    ],
-  },
-  {
-    id: "bookclub",
-    name: "Book Club Friends",
-    avatar: "📚",
-    messages: [
-      { id: "b1", fromMe: false, text: "Don't forget, we meet Thursday at 4!" },
-      { id: "b2", fromMe: false, text: "I'll bring lemon bars 🍋" },
-    ],
-  },
-  {
-    id: "tom",
-    name: "Tom (neighbor)",
-    avatar: "👨",
-    messages: [
-      { id: "t1", fromMe: false, text: "Thanks for watering my plants last week!" },
-      { id: "t2", fromMe: true, text: "Any time, Tom." },
-    ],
-  },
-];
+// The photo library lives in lib/photos.ts; re-exported here so existing imports keep working.
+export { INITIAL_PHOTOS, type Photo } from "./photos";
 
 export type Account = { firstName: string; lastName: string; email: string; password: string; phone: string };
 export type Registration = { eventId: string; people: number; confirmation: string };

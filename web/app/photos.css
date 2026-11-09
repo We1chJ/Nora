@@ -1,0 +1,545 @@
+/* Photos app, in the style of Google Photos (Material 3). Text sizes use var(--u) so they follow
+   the phone's text-size setting. */
+
+.gp {
+  --gp-text: #1f1f1f;
+  --gp-muted: #444746;
+  --gp-blue: #0b57d0;
+  --gp-blue-soft: #d3e3fd;
+  --gp-surface: #ffffff;
+  --gp-surface-2: #f0f4f9;
+  background: var(--gp-surface);
+  color: var(--gp-text);
+  position: relative;
+}
+
+.gp-icon {
+  width: 24px;
+  height: 24px;
+  flex: none;
+}
+
+/* ---------- Top bar ---------- */
+
+.gp-topbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 60px;
+  padding: 6px 12px 6px 16px;
+  background: var(--gp-surface);
+}
+
+.gp-topbar.selecting,
+.gp-topbar.sub {
+  padding-left: 4px;
+}
+
+.gp-wordmark {
+  flex: 1;
+  font-size: calc(1.5 * var(--u));
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+
+.gp-select-btn,
+.gp-text-btn {
+  min-height: 44px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  color: var(--gp-blue);
+  font-weight: 600;
+  font-size: calc(1.0625 * var(--u));
+}
+
+.gp-text-btn {
+  margin-left: auto;
+}
+
+.gp-avatar {
+  flex: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #7c4dff;
+  color: #fff;
+  font-weight: 600;
+  font-size: 18px;
+}
+
+.gp-icon-btn {
+  flex: none;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--gp-text);
+}
+
+.gp-icon-btn.light {
+  color: #fff;
+}
+
+.gp-selected-count,
+.gp-sub-title {
+  flex: 1;
+  font-size: calc(1.375 * var(--u));
+  font-weight: 500;
+}
+
+/* ---------- Grid ---------- */
+
+.app-body.gp-body {
+  padding: 0 0 150px;
+  gap: 0;
+}
+
+.gp-day-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 48px;
+  padding: 8px 16px 6px;
+}
+
+.gp-day-header h2 {
+  font-size: calc(1.0625 * var(--u));
+  font-weight: 500;
+}
+
+.gp-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2px;
+}
+
+.gp-tile {
+  position: relative;
+  aspect-ratio: 1;
+  overflow: hidden;
+  background: #e3e3e3;
+  -webkit-touch-callout: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.gp-tile img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  pointer-events: none;
+  transition: transform 0.15s, border-radius 0.15s;
+}
+
+.gp-tile.selected {
+  background: var(--gp-blue-soft);
+}
+
+.gp-tile.selected img {
+  transform: scale(0.82);
+  border-radius: 12px;
+}
+
+.gp-circle {
+  flex: none;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 2px solid var(--gp-muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  color: #fff;
+}
+
+.gp-circle .gp-icon {
+  width: 18px;
+  height: 18px;
+}
+
+.gp-circle.on {
+  background: var(--gp-blue);
+  border-color: var(--gp-blue);
+}
+
+.gp-circle.on-photo {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  border-color: #fff;
+  background: rgba(0, 0, 0, 0.18);
+  box-shadow: 0 0 3px rgba(0, 0, 0, 0.4);
+}
+
+.gp-circle.on-photo.on {
+  background: var(--gp-blue);
+  border-color: #fff;
+}
+
+.gp-fav-badge {
+  position: absolute;
+  left: 4px;
+  bottom: 4px;
+  color: #fff;
+  filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.6));
+}
+
+.gp-fav-badge .gp-icon {
+  width: 18px;
+  height: 18px;
+}
+
+.gp-footnote,
+.gp-empty,
+.gp-note {
+  color: var(--gp-muted);
+  font-size: calc(0.9375 * var(--u));
+  padding: 18px 16px;
+  text-align: center;
+}
+
+.gp-note {
+  text-align: left;
+  background: var(--gp-surface-2);
+  margin: 4px 12px 12px;
+  border-radius: 12px;
+  padding: 12px 14px;
+}
+
+/* ---------- Bottom tab bar and selection actions ---------- */
+
+.gp-tabbar,
+.gp-actionbar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  justify-content: space-around;
+  padding: 8px 4px 10px;
+  background: var(--gp-surface-2);
+  z-index: 5;
+}
+
+/* Leave the bottom-right corner free for the Nora bubble so it never covers Delete or Search. */
+.gp-tabbar,
+.gp-actionbar {
+  padding-right: 84px;
+}
+
+.gp-tab {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  font-size: calc(0.875 * var(--u));
+  font-weight: 500;
+  color: var(--gp-muted);
+}
+
+.gp-tab-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 32px;
+  border-radius: 999px;
+}
+
+.gp-tab.active {
+  color: var(--gp-text);
+}
+
+.gp-tab.active .gp-tab-pill {
+  background: var(--gp-blue-soft);
+  color: #041e49;
+}
+
+.gp-action {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-height: 56px;
+  justify-content: center;
+  font-size: calc(0.875 * var(--u));
+  font-weight: 500;
+  color: var(--gp-text);
+}
+
+.gp-action.light {
+  color: #fff;
+}
+
+/* ---------- Undo bar ---------- */
+
+.gp-snackbar {
+  position: absolute;
+  left: 12px;
+  right: 92px;
+  bottom: 92px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 8px 10px 16px;
+  border-radius: 8px;
+  background: #303030;
+  color: #f2f2f2;
+  font-size: calc(0.9375 * var(--u));
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  z-index: 25;
+}
+
+.gp-snackbar span {
+  flex: 1;
+}
+
+.gp-snackbar-btn {
+  min-height: 40px;
+  padding: 6px 12px;
+  color: #a8c7fa;
+  font-weight: 700;
+}
+
+.gp-viewer ~ .gp-snackbar {
+  bottom: 110px;
+}
+
+/* ---------- Viewer ---------- */
+
+.gp-viewer {
+  background: #000;
+  color: #fff;
+  position: relative;
+}
+
+.gp-viewer-top {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 56px;
+  padding: 4px 12px 4px 4px;
+}
+
+.gp-viewer-date {
+  flex: 1;
+  min-width: 0;
+  font-size: calc(0.9375 * var(--u));
+  color: #e3e3e3;
+}
+
+.gp-stage {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  touch-action: pan-y;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.gp-stage img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  transition: transform 0.2s;
+  -webkit-touch-callout: none;
+}
+
+.gp-viewer-actions {
+  display: flex;
+  justify-content: space-around;
+  padding: 8px 4px 12px;
+  padding-right: 84px;
+}
+
+/* ---------- Bottom sheet ---------- */
+
+.gp-sheet-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: flex-end;
+  z-index: 30;
+}
+
+.gp-sheet {
+  width: 100%;
+  background: var(--gp-surface-2, #f0f4f9);
+  color: #1f1f1f;
+  border-radius: 28px 28px 0 0;
+  padding: 24px 20px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.gp-sheet h2 {
+  font-size: calc(1.375 * var(--u));
+  font-weight: 500;
+}
+
+.gp-sheet p {
+  color: #444746;
+  line-height: 1.45;
+}
+
+.gp-sheet-actions {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 6px;
+  /* Keep the buttons clear of the Nora bubble in the bottom-right corner. */
+  padding-right: 72px;
+}
+
+.gp-sheet-btn {
+  min-height: 48px;
+  padding: 10px 20px;
+  border-radius: 999px;
+  font-weight: 600;
+  color: #0b57d0;
+}
+
+.gp-sheet-btn.primary {
+  background: #0b57d0;
+  color: #fff;
+}
+
+.gp-sheet-btn.primary.danger {
+  background: #b3261e;
+}
+
+/* ---------- Collections ---------- */
+
+.gp-collections {
+  padding: 8px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.gp-collection-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(calc(9 * var(--u)), 1fr));
+  gap: 10px;
+}
+
+.gp-collection {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px;
+  border-radius: 16px;
+  background: var(--gp-surface-2);
+  text-align: left;
+}
+
+.gp-collection-icon {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+}
+
+.gp-collection-icon.fav {
+  background: #f9ab00;
+}
+
+.gp-collection-icon.bin {
+  background: #5f6368;
+}
+
+.gp-collection-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.gp-collection-text span {
+  color: var(--gp-muted);
+  font-size: calc(0.875 * var(--u));
+}
+
+.gp-section-title {
+  font-size: calc(1.125 * var(--u));
+  font-weight: 500;
+  margin-top: 8px;
+}
+
+.gp-new-album {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-weight: 500;
+  color: var(--gp-blue);
+}
+
+.gp-new-album-plus {
+  width: 64px;
+  height: 64px;
+  border-radius: 14px;
+  border: 2px dashed #c4c7c5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ---------- Search ---------- */
+
+.gp-search {
+  padding: 4px 16px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.gp-search-input {
+  min-height: 52px;
+  padding: 10px 20px;
+  border-radius: 999px;
+  border: none;
+  background: var(--gp-surface-2);
+  font-size: calc(1.0625 * var(--u));
+}
+
+.gp-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.gp-chip {
+  min-height: 40px;
+  padding: 6px 16px;
+  border-radius: 8px;
+  border: 1px solid #c4c7c5;
+  font-weight: 500;
+  font-size: calc(0.9375 * var(--u));
+}
+
+/* Shared photo tile used by Messages. */
+.photo-tile {
+  overflow: hidden;
+}
+
+.photo-tile img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}

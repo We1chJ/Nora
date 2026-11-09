@@ -61,10 +61,21 @@ export function ConfirmDialog({
   );
 }
 
-export function PhotoTile({ emoji, bg, size = "md" }: { emoji: string; bg: string; size?: "sm" | "md" | "lg" }) {
+export function PhotoTile({
+  photo,
+  size = "md",
+}: {
+  photo?: { src: string; thumb: string; title: string };
+  size?: "sm" | "md" | "lg";
+  /** Old emoji tiles; ignored now that photos are real images. */
+  emoji?: string;
+  bg?: string;
+}) {
+  if (!photo) return <span className={`photo-tile photo-${size}`} style={{ background: "#ddd" }} aria-hidden />;
   return (
-    <span className={`photo-tile photo-${size}`} style={{ background: bg }} aria-hidden>
-      {emoji}
+    <span className={`photo-tile photo-${size}`} aria-hidden>
+      {/* eslint-disable-next-line @next/next/no-img-element -- small local practice images */}
+      <img src={size === "lg" ? photo.src : photo.thumb} alt="" draggable={false} />
     </span>
   );
 }
