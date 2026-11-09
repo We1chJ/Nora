@@ -329,18 +329,6 @@ export function Nora({ phoneRef }: Props) {
         </button>
       </div>
     );
-  } else if (mode === "thinking") {
-    card = (
-      <div className="nora-card">
-        <div className="nora-card-head">
-          <NoraFace mood="thinking" />
-          <strong>Nora</strong>
-        </div>
-        <p className="nora-message thinking">
-          Looking at your screen<span className="dots" />
-        </p>
-      </div>
-    );
   } else if ((mode === "guiding" || mode === "done") && (reply || error)) {
     card = (
       <div className={`nora-card${mode === "done" ? " done" : ""}`}>
@@ -405,7 +393,7 @@ export function Nora({ phoneRef }: Props) {
         </div>
       )}
 
-      <NoraBubble mood={mode} listening={mode === "listening"} onTap={mode === "listening" ? stopListening : startListening} />
+      <NoraBubble mood={mode} listening={mode === "listening"} thinking={mode === "thinking"} onTap={mode === "listening" ? stopListening : startListening} />
     </div>
   );
 }

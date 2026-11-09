@@ -58,12 +58,13 @@ type Spot = { side: "left" | "right"; y: number; tucked: boolean };
 type Props = {
   mood: FaceMood;
   listening: boolean;
+  thinking: boolean;
   onTap: () => void;
 };
 
 // A floating bubble: tap it, drag it anywhere, let go and it snaps to the nearest side.
 // Push it against an edge and it tucks in, with its face peeking out.
-export function NoraBubble({ mood, listening, onTap }: Props) {
+export function NoraBubble({ mood, listening, thinking, onTap }: Props) {
   const wrapRef = useRef<HTMLDivElement>(null);
   const [area, setArea] = useState({ w: 0, h: 0 });
   const [spot, setSpot] = useState<Spot>({ side: "right", y: -1, tucked: false });
@@ -168,6 +169,18 @@ export function NoraBubble({ mood, listening, onTap }: Props) {
         <NoraFace mood={mood} look={look} size={SIZE - 6} />
       </button>
       {listening && !drag && <span className={`nora-stop-pill ${spot.side}`}>Tap me to stop</span>}
+      {thinking && !drag && (
+        // A thought cloud floating up from the bubble, toward the middle of the screen.
+        <div className={`nora-thought ${spot.side}${y < 110 ? " below" : ""}`} role="status" aria-label="Nora is looking at your screen">
+          <span className="nora-thought-puff small" />
+          <span className="nora-thought-puff mid" />
+          <span className="nora-thought-cloud">
+            <i />
+            <i />
+            <i />
+          </span>
+        </div>
+      )}
     </div>
   );
 }
