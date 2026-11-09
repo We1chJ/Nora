@@ -48,6 +48,9 @@ const YESTERDAY = "Sunday, November 8";
 
 // Newest first, the order the grid shows them.
 export const INITIAL_PHOTOS: Photo[] = [
+  // This year's Thanksgiving luncheon (the user's choice). It's dated after the phone's "today"
+  // (Nov 9), matching the Nov 21 event, so it's the newest photo and shows first.
+  photo("p-thanksgiving", "thanksgiving", "Thanksgiving luncheon", "Sat, Nov 21", "Saturday, November 21 · 12:30 PM"),
   // The dog's photos, in the order they were taken. The keeper (dog-1) is in the middle.
   photo("dog-a", "dog-2", "Ruby", "Yesterday", `${YESTERDAY} · 3:02 PM`),
   photo("dog-b", "dog-9", "Ruby", "Yesterday", `${YESTERDAY} · 3:02 PM`),
@@ -72,7 +75,4 @@ export const INITIAL_PHOTOS: Photo[] = [
   photo("hummingbird", "hummingbird", "Hummingbird", "Mon, Sep 14", "Monday, September 14 · 9:50 AM"),
   photo("tulips", "tulips", "Tulips", "Mon, Apr 20", "Monday, April 20 · 1:35 PM"),
   photo("cabin", "cabin", "Snowy cabin", "Sun, Jan 18", "Sunday, January 18 · 10:00 AM"),
-  // Placeholder until the user picks: last year's luncheon, so the phone's "today" (Nov 9) and the
-  // Nov 21 event stay as they are. To change it, edit this one line (and move it to match its date).
-  photo("p-thanksgiving", "thanksgiving", "Thanksgiving luncheon", "Fri, Nov 21, 2025", "Friday, November 21, 2025 · 12:30 PM"),
 ];
