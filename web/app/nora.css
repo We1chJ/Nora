@@ -1,0 +1,125 @@
+/* Nora's floating bubble and face. Kept apart from globals.css, which belongs to the practice website. */
+
+.nora-bubble-wrap {
+  position: absolute;
+  width: 68px;
+  height: 68px;
+  z-index: 5;
+  transition:
+    left 0.45s cubic-bezier(0.34, 1.4, 0.64, 1),
+    top 0.45s cubic-bezier(0.34, 1.4, 0.64, 1);
+}
+
+.nora-bubble-wrap.dragging,
+.nora-bubble-wrap.still {
+  transition: none;
+}
+
+.nora-bubble-wrap .nora-bubble {
+  position: relative;
+  right: auto;
+  bottom: auto;
+  width: 68px;
+  height: 68px;
+  padding: 0;
+  border-radius: 50%;
+  border: 3px solid #fff;
+  background: #f2a33a;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  cursor: grab;
+  box-shadow: 0 8px 20px rgba(120, 70, 10, 0.35);
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+  animation: none;
+}
+
+.nora-bubble-wrap.dragging .nora-bubble {
+  cursor: grabbing;
+  transform: scale(1.1);
+  box-shadow: 0 16px 30px rgba(120, 70, 10, 0.4);
+}
+
+.nora-bubble-wrap .nora-bubble:active:not(.tucked) {
+  transform: scale(0.94);
+}
+
+.nora-bubble-wrap .nora-bubble.tucked {
+  box-shadow: 0 4px 12px rgba(120, 70, 10, 0.3);
+}
+
+.nora-bubble-wrap .nora-bubble.listening {
+  border-color: #d33a2c;
+  animation: nora-listen 1.2s ease-out infinite;
+}
+
+.nora-stop-pill {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  white-space: nowrap;
+  background: #d33a2c;
+  color: #fff;
+  font-weight: 800;
+  font-size: 15px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.2);
+  pointer-events: none;
+}
+
+.nora-stop-pill.right {
+  right: calc(100% + 8px);
+}
+
+.nora-stop-pill.left {
+  left: calc(100% + 8px);
+}
+
+.nora-card-head .nora-face {
+  flex: none;
+}
+
+/* A slow blink so the face feels alive. */
+.nora-face .nora-eyes {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: nora-blink 5s infinite;
+}
+
+.nora-face.thinking {
+  animation: nora-ponder 1.6s ease-in-out infinite;
+}
+
+@keyframes nora-blink {
+  0%,
+  94%,
+  100% {
+    transform: scaleY(1);
+  }
+  97% {
+    transform: scaleY(0.1);
+  }
+}
+
+@keyframes nora-ponder {
+  50% {
+    transform: translateY(-2px) rotate(-4deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nora-bubble-wrap,
+  .nora-face .nora-eyes,
+  .nora-face.thinking {
+    transition: none;
+    animation: none;
+  }
+}

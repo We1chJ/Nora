@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Nora</string>
+    <string name="service_description">Shows the Nora help button on top of your apps.</string>
+    <string name="setup_instructions">Turn on Nora in Accessibility settings to show the help button.</string>
+    <string name="open_settings">Open Accessibility settings</string>
+    <string name="bubble_label">Nora help button</string>
+    <string name="bubble_tapped">Hi, I\'m Nora!</string>
+</resources>
