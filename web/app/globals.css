@@ -12,6 +12,17 @@
   --nora-soft: #f1ecff;
   --radius: 14px;
   --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  /* One unit of text size. 1rem follows the phone's text-size setting (see below), capped at
+     double the normal size so the practice phone stays usable at the very largest settings. */
+  --u: min(1rem, 32px);
+}
+
+/* iPhone and iPad: make 1rem follow Settings → Display & Brightness → Text Size.
+   Don't set font-size on html anywhere else, or the link to that setting breaks. */
+@supports (font: -apple-system-body) and (-webkit-touch-callout: none) {
+  html {
+    font: -apple-system-body;
+  }
 }
 
 * {
@@ -24,9 +35,12 @@ body {
   height: 100%;
   background: var(--bg);
   color: var(--text);
-  font-family: var(--font);
-  font-size: 18px;
   -webkit-text-size-adjust: 100%;
+}
+
+body {
+  font-family: var(--font);
+  font-size: calc(1.125 * var(--u));
 }
 
 button,
@@ -67,7 +81,7 @@ p {
 
 .phone {
   --top-bar: 30px;
-  --bottom-bar: calc(52px + env(safe-area-inset-bottom));
+  --bottom-bar: calc(max(52px, 3.25 * var(--u)) + env(safe-area-inset-bottom));
   position: relative;
   width: 100vw;
   height: 100dvh;
@@ -122,7 +136,7 @@ p {
   padding-top: 8px;
   background: #e4e7ee;
   border-top: 1px solid var(--line);
-  font-size: 17px;
+  font-size: calc(1.0625 * var(--u));
   font-weight: 700;
   color: #1b2340;
 }
@@ -162,7 +176,7 @@ p {
 }
 
 .app-title {
-  font-size: 20px;
+  font-size: calc(1.25 * var(--u));
   font-weight: 700;
   text-align: center;
   white-space: nowrap;
@@ -213,7 +227,7 @@ p {
 
 .text-btn {
   color: var(--blue);
-  font-size: 18px;
+  font-size: calc(1.125 * var(--u));
   padding: 8px 10px;
 }
 
@@ -283,7 +297,7 @@ p {
   color: #fff;
   padding: 12px 18px;
   border-radius: 12px;
-  font-size: 16px;
+  font-size: calc(1 * var(--u));
   max-width: 86%;
   text-align: center;
   pointer-events: none;
@@ -325,7 +339,7 @@ p {
 }
 
 .dialog h2 {
-  font-size: 20px;
+  font-size: calc(1.25 * var(--u));
 }
 
 .dialog-actions {
@@ -354,7 +368,7 @@ p {
 .sheet-item {
   text-align: left;
   padding: 16px;
-  font-size: 19px;
+  font-size: calc(1.1875 * var(--u));
   border-bottom: 1px solid var(--line);
 }
 
@@ -369,7 +383,7 @@ p {
 }
 
 .drawer h2 {
-  font-size: 22px;
+  font-size: calc(1.375 * var(--u));
   padding: 0 10px 12px;
 }
 
@@ -378,7 +392,7 @@ p {
   justify-content: space-between;
   padding: 16px 12px;
   border-radius: 12px;
-  font-size: 19px;
+  font-size: calc(1.1875 * var(--u));
 }
 
 .drawer-item.active {
@@ -389,6 +403,7 @@ p {
 /* ---------- Home ---------- */
 
 .home {
+  overflow-y: auto;
   background: linear-gradient(170deg, #c9dcf7 0%, #e8d9f5 55%, #f7e3d3 100%);
   padding: 26px 18px;
   gap: 30px;
@@ -405,12 +420,12 @@ p {
 }
 
 .home-date {
-  font-size: 19px;
+  font-size: calc(1.1875 * var(--u));
 }
 
 .app-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(auto-fill, minmax(calc(4.25 * var(--u)), 1fr));
   gap: 22px 10px;
 }
 
@@ -433,8 +448,10 @@ p {
 }
 
 .app-icon-label {
-  font-size: 15px;
+  font-size: calc(0.9375 * var(--u));
   color: #1b2340;
+  text-align: center;
+  overflow-wrap: anywhere;
 }
 
 /* ---------- Forms ---------- */
@@ -449,7 +466,7 @@ p {
 .field input,
 .field select {
   font-weight: 400;
-  font-size: 18px;
+  font-size: calc(1.125 * var(--u));
   min-height: 50px;
   padding: 10px 12px;
   border: 2px solid #c7ccd6;
@@ -518,12 +535,12 @@ p {
 }
 
 .email-row-from {
-  font-size: 17px;
+  font-size: calc(1.0625 * var(--u));
 }
 
 .email-row-subject,
 .email-row-preview {
-  font-size: 16px;
+  font-size: calc(1 * var(--u));
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -544,12 +561,12 @@ p {
 }
 
 .email-subject {
-  font-size: 23px;
+  font-size: calc(1.4375 * var(--u));
   line-height: 1.3;
 }
 
 .email-from {
-  font-size: 16px;
+  font-size: calc(1 * var(--u));
   word-break: break-all;
 }
 
@@ -563,7 +580,7 @@ p {
 .btn-scam {
   background: #ffcc00;
   color: #000;
-  font-size: 20px;
+  font-size: calc(1.25 * var(--u));
   font-weight: 800;
 }
 
@@ -574,7 +591,7 @@ p {
 
 .email-footer {
   margin-top: 30px;
-  font-size: 13px;
+  font-size: calc(0.8125 * var(--u));
   color: #8a909c;
   line-height: 1.5;
 }
@@ -587,7 +604,7 @@ p {
   background: #e7efff;
   border-radius: 10px;
   padding: 10px 12px;
-  font-size: 16px;
+  font-size: calc(1 * var(--u));
 }
 
 /* ---------- Photos ---------- */
@@ -622,7 +639,7 @@ p {
   background: var(--blue);
   color: #fff;
   border: 2px solid #fff;
-  font-size: 16px;
+  font-size: calc(1 * var(--u));
   display: flex;
   align-items: center;
   justify-content: center;
@@ -656,7 +673,7 @@ p {
 .photo-count {
   text-align: center;
   padding: 16px;
-  font-size: 16px;
+  font-size: calc(1 * var(--u));
 }
 
 .bottom-toolbar {
@@ -682,7 +699,7 @@ p {
   max-width: 78%;
   padding: 10px 14px;
   border-radius: 20px;
-  font-size: 18px;
+  font-size: calc(1.125 * var(--u));
   line-height: 1.35;
   display: flex;
   flex-direction: column;
@@ -725,7 +742,7 @@ p {
   border: 2px solid #c7ccd6;
   border-radius: 22px;
   padding: 8px 14px;
-  font-size: 17px;
+  font-size: calc(1.0625 * var(--u));
 }
 
 .attachments {
@@ -748,7 +765,7 @@ p {
   border-radius: 50%;
   background: #333;
   color: #fff;
-  font-size: 16px;
+  font-size: calc(1 * var(--u));
   line-height: 1;
 }
 
@@ -881,7 +898,7 @@ p {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 16px;
+  font-size: calc(1 * var(--u));
 }
 
 .nora-card.done .nora-avatar {
@@ -895,7 +912,7 @@ p {
 }
 
 .nora-message {
-  font-size: 21px;
+  font-size: calc(1.3125 * var(--u));
   line-height: 1.35;
   font-weight: 600;
 }
@@ -925,7 +942,7 @@ p {
 }
 
 .nora-note {
-  font-size: 16px;
+  font-size: calc(1 * var(--u));
   color: var(--muted);
 }
 
@@ -936,7 +953,7 @@ p {
 
 .nora-card-actions .btn {
   flex: 1;
-  font-size: 16px;
+  font-size: calc(1 * var(--u));
 }
 
 .nora-type-row {
@@ -952,7 +969,7 @@ p {
   border: 2px solid #c7ccd6;
   border-radius: 12px;
   padding: 8px 12px;
-  font-size: 17px;
+  font-size: calc(1.0625 * var(--u));
 }
 
 .nora-bubble {
@@ -965,7 +982,7 @@ p {
   background: var(--nora);
   color: #fff;
   font-weight: 800;
-  font-size: 17px;
+  font-size: calc(1.0625 * var(--u));
   border: 3px solid #fff;
   box-shadow: 0 8px 20px rgba(60, 30, 140, 0.4);
 }
@@ -1064,7 +1081,7 @@ p {
   padding: 0 14px;
   border-radius: 999px;
   background: #e3e6ec;
-  font-size: 15px;
+  font-size: calc(0.9375 * var(--u));
   color: #3c4250;
 }
 
@@ -1082,6 +1099,7 @@ p {
 
 .site-header {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: 10px;
@@ -1106,13 +1124,13 @@ p {
   display: flex;
   flex-direction: column;
   font-weight: 800;
-  font-size: 18px;
+  font-size: calc(1.125 * var(--u));
   line-height: 1.1;
 }
 
 .site-logo-text small {
   font-weight: 500;
-  font-size: 14px;
+  font-size: calc(0.875 * var(--u));
   opacity: 0.9;
 }
 
@@ -1123,7 +1141,7 @@ p {
   padding: 8px 16px;
   border-radius: 999px;
   font-weight: 700;
-  font-size: 17px;
+  font-size: calc(1.0625 * var(--u));
 }
 
 .site-signin-btn {
@@ -1169,7 +1187,7 @@ p {
 }
 
 .site-hero h1 {
-  font-size: 28px;
+  font-size: calc(1.75 * var(--u));
   color: #1f4d3a;
 }
 
@@ -1186,7 +1204,7 @@ p {
 }
 
 .site-day-title {
-  font-size: 19px;
+  font-size: calc(1.1875 * var(--u));
   padding-top: 6px;
   border-top: 2px solid #e7e3d8;
   color: #3b3f47;
@@ -1222,12 +1240,12 @@ p {
   display: flex;
   flex-direction: column;
   gap: 2px;
-  font-size: 16px;
+  font-size: calc(1 * var(--u));
   color: #3b3f47;
 }
 
 .site-event-text strong {
-  font-size: 18px;
+  font-size: calc(1.125 * var(--u));
   color: var(--text);
 }
 
@@ -1265,7 +1283,7 @@ p {
 }
 
 .site-title {
-  font-size: 26px;
+  font-size: calc(1.625 * var(--u));
   line-height: 1.2;
 }
 
@@ -1316,7 +1334,7 @@ p {
 
 .site-cta {
   min-height: 56px;
-  font-size: 19px;
+  font-size: calc(1.1875 * var(--u));
 }
 
 .btn-outline {
@@ -1335,7 +1353,7 @@ p {
   align-items: center;
   gap: 10px;
   color: var(--muted);
-  font-size: 16px;
+  font-size: calc(1 * var(--u));
 }
 
 .site-divider::before,
@@ -1348,7 +1366,7 @@ p {
 
 .field-row {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(auto-fit, minmax(calc(8.5 * var(--u)), 1fr));
   gap: 10px;
 }
 
@@ -1365,7 +1383,7 @@ p {
 .field-hint {
   font-weight: 400;
   color: var(--muted);
-  font-size: 15px;
+  font-size: calc(0.9375 * var(--u));
 }
 
 .site-readonly {
@@ -1381,7 +1399,7 @@ p {
   padding: 18px 16px;
   background: #eeece6;
   color: #4b505b;
-  font-size: 15px;
+  font-size: calc(0.9375 * var(--u));
   line-height: 1.5;
 }
 
@@ -1397,5 +1415,17 @@ p {
 
   .site-logo-text small {
     display: none;
+  }
+}
+
+/* Reduce Motion (iPhone and Android accessibility setting): stop pulsing and bouncing. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

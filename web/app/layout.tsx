@@ -4,6 +4,8 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "Nora – Practice Phone",
   description: "Try Nora, a friendly helper that guides you through tasks on your phone.",
+  // Lets Chrome follow the phone's own text-size setting where it supports this tag.
+  other: { "text-scale": "scale" },
 };
 
 export const viewport: Viewport = {
