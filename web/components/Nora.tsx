@@ -3,17 +3,28 @@
 import { useCallback, useEffect, useRef, useState, type FormEvent, type PointerEvent as ReactPointerEvent, type RefObject } from "react";
 import { domToJpeg } from "modern-screenshot";
 import { NoraBubble, NoraFace } from "./NoraBubble";
+import { NoraGesture, type Gesture } from "./NoraGesture";
 import "@/app/nora.css";
 
 // Nora works like a real phone overlay: all it gets from the website is a screenshot and where the
 // person tapped. It never reads the page's code, labels or state.
 
 type Rect = { x: number; y: number; width: number; height: number };
-type Reply = { message: string; highlight: Rect | null; needs_answer: boolean; done: boolean };
+type Reply = {
+  message: string;
+  highlight: Rect | null;
+  gesture: Gesture;
+  drag_to: { x: number; y: number } | null;
+  label: string;
+  needs_answer: boolean;
+  done: boolean;
+};
 type Mode = "idle" | "listening" | "thinking" | "guiding" | "done";
 type ChatItem = { from: "nora" | "you"; text: string };
 // Where to draw the highlight, in the overlay's own coordinates.
 type Box = { top: number; left: number; width: number; height: number; layerHeight: number };
+// The movement to demonstrate for the current step, in the overlay's own coordinates.
+type Guide = { gesture: Gesture; dragTo: { x: number; y: number } | null; label: string; w: number; h: number };
 
 // The Web Speech API isn't in TypeScript's DOM types; this is the part Nora uses.
 type Recognition = {
@@ -70,6 +81,7 @@ export function Nora({ phoneRef }: Props) {
   const [heard, setHeard] = useState("");
   const [micProblem, setMicProblem] = useState("");
   const [box, setBox] = useState<Box | null>(null);
+  const [guide, setGuide] = useState<Guide | null>(null);
   const [keyboard, setKeyboard] = useState(0);
   const layerRef = useRef<HTMLDivElement>(null);
 
@@ -104,6 +116,7 @@ export function Nora({ phoneRef }: Props) {
       setMode("thinking");
       setError("");
       setBox(null);
+      setGuide(null);
 
       try {
         const shot = await screenshot(phone);
@@ -120,14 +133,27 @@ export function Nora({ phoneRef }: Props) {
 
         const h = data.highlight;
         const highlighted = h ? ` and highlighted the area x=${Math.round(h.x)}, y=${Math.round(h.y)}, ${Math.round(h.width)} wide, ${Math.round(h.height)} tall` : "";
-        log.current = [...log.current, clip(`Nora said: "${data.message}"${highlighted}`)].slice(-MAX_LOG);
+        const showed = data.gesture && data.gesture !== "none" ? `, showing a ${data.gesture.replace("_", " ")} movement` : "";
+        log.current = [...log.current, clip(`Nora said: "${data.message}"${highlighted}${showed}`)].slice(-MAX_LOG);
         setReply(data);
         // The screenshot covers the phone's outer edge; the overlay may sit slightly inside it.
         const layer = layerRef.current;
-        if (h && layer && h.width > 0 && h.height > 0) {
+        if (layer) {
           const p = phone.getBoundingClientRect();
           const l = layer.getBoundingClientRect();
-          setBox({ left: h.x - (l.left - p.left), top: h.y - (l.top - p.top), width: h.width, height: h.height, layerHeight: l.height });
+          const dx = l.left - p.left;
+          const dy = l.top - p.top;
+          if (h && h.width > 0 && h.height > 0) {
+            setBox({ left: h.x - dx, top: h.y - dy, width: h.width, height: h.height, layerHeight: l.height });
+          }
+          const d = data.drag_to;
+          setGuide({
+            gesture: data.gesture ?? "none",
+            dragTo: d ? { x: d.x - dx, y: d.y - dy } : null,
+            label: (data.label ?? "").slice(0, 40),
+            w: l.width,
+            h: l.height,
+          });
         }
         setChat((c) => [...c, { from: "nora", text: data.message }]);
         if (data.done) {
@@ -286,6 +312,7 @@ export function Nora({ phoneRef }: Props) {
     setMode("idle");
     setReply(null);
     setBox(null);
+    setGuide(null);
     setError("");
     setSheetOpen(false);
   };
@@ -299,7 +326,9 @@ export function Nora({ phoneRef }: Props) {
     let timer: ReturnType<typeof setTimeout> | undefined;
     let pending: string[] = [];
     const queue = (what: string, delay: number) => {
-      setBox(null); // the screen is changing, so the old highlight may be in the wrong place
+      // The screen is changing, so the old highlight and gesture may be in the wrong place.
+      setBox(null);
+      setGuide(null);
       if (pending[pending.length - 1] !== what) pending.push(what);
       clearTimeout(timer);
       timer = setTimeout(() => {
@@ -357,6 +386,9 @@ export function Nora({ phoneRef }: Props) {
 
   const listening = mode === "listening";
   const highlight = active && mode === "guiding" ? box : null;
+  const showGuide = active && mode === "guiding" && !sheetOpen ? guide : null;
+  // A scroll or swipe moves across an area, so it gets arrows rather than a tap ring.
+  const sweeping = !!showGuide && /^(scroll|swipe)/.test(showGuide.gesture);
   const cardAtTop = !!highlight && highlight.top + highlight.height / 2 > highlight.layerHeight * 0.55;
 
   let card = null;
@@ -396,10 +428,20 @@ export function Nora({ phoneRef }: Props) {
 
   return (
     <div className="nora-layer" data-nora-ui ref={layerRef}>
-      {highlight && (
+      {highlight && !sweeping && (
         <div
           className="nora-spotlight"
           style={{ top: highlight.top - 6, left: highlight.left - 6, width: highlight.width + 12, height: highlight.height + 12 }}
+        />
+      )}
+
+      {showGuide && (
+        <NoraGesture
+          gesture={showGuide.gesture}
+          box={highlight}
+          dragTo={showGuide.dragTo}
+          label={showGuide.label}
+          area={{ w: showGuide.w, h: showGuide.h }}
         />
       )}
 
