@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState, type FormEvent, type PointerEvent as ReactPointerEvent, type RefObject } from "react";
 import { domToJpeg } from "modern-screenshot";
 import { NoraBubble, NoraFace } from "./NoraBubble";
-import { NoraGesture, type Gesture } from "./NoraGesture";
+import { NoraGesture, gestureZones, type Gesture, type Zone } from "./NoraGesture";
 import "@/app/nora.css";
 
 // Nora works like a real phone overlay: all it gets from the website is a screenshot and where the
@@ -46,6 +46,31 @@ function getRecognition(): RecognitionCtor | undefined {
 }
 
 const MAX_LOG = 30;
+const CARD_MARGIN = 10;
+const HOME_BAR_ROOM = 96; // keep the card above the phone's Home bar
+
+// Pick the card's top edge: the spot where it covers the least of the highlight, finger, arrows and
+// labels, preferring spots near the top or bottom edge so the middle of the screen stays clear.
+function placeCard(h: number, w: number, cardH: number, zones: Zone[]) {
+  const minTop = CARD_MARGIN;
+  const maxTop = Math.max(minTop, h - cardH - HOME_BAR_ROOM);
+  let best = maxTop;
+  let bestScore = Infinity;
+  for (let top = minTop; top <= maxTop; top += 4) {
+    let covered = 0;
+    for (const z of zones) {
+      const ox = Math.max(0, Math.min(w - CARD_MARGIN, z.right) - Math.max(CARD_MARGIN, z.left));
+      const oy = Math.max(0, Math.min(top + cardH, z.bottom) - Math.max(top, z.top));
+      covered += ox * oy;
+    }
+    const score = covered * 100 + Math.min(top - minTop, maxTop - top);
+    if (score < bestScore) {
+      bestScore = score;
+      best = top;
+    }
+  }
+  return best;
+}
 const HOLD_MS = 350; // a press on the mic longer than this is hold-to-talk; shorter is tap-to-toggle
 const clip = (text: string) => (text.length > 590 ? `${text.slice(0, 589)}…` : text);
 const isNoraUi = (n: EventTarget | null) => n instanceof Element && !!n.closest("[data-nora-ui]");
@@ -83,6 +108,11 @@ export function Nora({ phoneRef }: Props) {
   const [box, setBox] = useState<Box | null>(null);
   const [guide, setGuide] = useState<Guide | null>(null);
   const [keyboard, setKeyboard] = useState(0);
+  const [collapsed, setCollapsed] = useState(false);
+  const [touching, setTouching] = useState(false);
+  const [cardH, setCardH] = useState(130);
+  const [layerSize, setLayerSize] = useState({ w: 0, h: 0 });
+  const cardRef = useRef<HTMLDivElement>(null);
   const layerRef = useRef<HTMLDivElement>(null);
 
   // Nothing here is saved: the session lives in memory until it ends or the page reloads.
@@ -156,6 +186,7 @@ export function Nora({ phoneRef }: Props) {
           });
         }
         setChat((c) => [...c, { from: "nora", text: data.message }]);
+        setCollapsed(false); // a new instruction always shows in full
         if (data.done) {
           setSession(false);
           setMode("done");
@@ -380,6 +411,72 @@ export function Nora({ phoneRef }: Props) {
     };
   }, [sheetOpen]);
 
+  // Track the overlay's size, for placing the card.
+  useEffect(() => {
+    const layer = layerRef.current;
+    if (!layer) return;
+    const measure = () => setLayerSize({ w: layer.clientWidth, h: layer.clientHeight });
+    const ro = new ResizeObserver(measure);
+    ro.observe(layer);
+    window.addEventListener("resize", measure);
+    const first = setTimeout(measure, 0);
+    return () => {
+      clearTimeout(first);
+      window.removeEventListener("resize", measure);
+      ro.disconnect();
+    };
+  }, []);
+
+  // While the person is touching or scrolling the screen, fade the card so it doesn't hide
+  // what they're looking at.
+  const showingCard = !sheetOpen && (mode === "guiding" || mode === "done");
+  useEffect(() => {
+    const phone = phoneRef.current;
+    if (!showingCard || !phone) return;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const settle = (ms: number) => {
+      clearTimeout(timer);
+      timer = setTimeout(() => setTouching(false), ms);
+    };
+    const onDown = (e: PointerEvent) => {
+      if (isNoraUi(e.target)) return;
+      clearTimeout(timer);
+      setTouching(true);
+    };
+    const onUp = () => settle(500);
+    const onScroll = (e: Event) => {
+      if (isNoraUi(e.target)) return;
+      setTouching(true);
+      settle(800);
+    };
+    phone.addEventListener("pointerdown", onDown, true);
+    phone.addEventListener("pointerup", onUp, true);
+    phone.addEventListener("pointercancel", onUp, true);
+    phone.addEventListener("scroll", onScroll, true);
+    return () => {
+      clearTimeout(timer);
+      phone.removeEventListener("pointerdown", onDown, true);
+      phone.removeEventListener("pointerup", onUp, true);
+      phone.removeEventListener("pointercancel", onUp, true);
+      phone.removeEventListener("scroll", onScroll, true);
+      setTouching(false);
+    };
+  }, [showingCard, phoneRef]);
+
+  // Measure the card, so it can be placed where it covers the least.
+  useEffect(() => {
+    const el = cardRef.current;
+    if (!el) return;
+    const measure = () => setCardH(el.offsetHeight);
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    const first = setTimeout(measure, 0);
+    return () => {
+      clearTimeout(first);
+      ro.disconnect();
+    };
+  });
+
   useEffect(() => {
     chatLogRef.current?.scrollTo({ top: chatLogRef.current.scrollHeight });
   }, [chat, sheetOpen]);
@@ -389,22 +486,41 @@ export function Nora({ phoneRef }: Props) {
   const showGuide = active && mode === "guiding" && !sheetOpen ? guide : null;
   // A scroll or swipe moves across an area, so it gets arrows rather than a tap ring.
   const sweeping = !!showGuide && /^(scroll|swipe)/.test(showGuide.gesture);
-  const cardAtTop = !!highlight && highlight.top + highlight.height / 2 > highlight.layerHeight * 0.55;
 
   let card = null;
-  if (!sheetOpen && (mode === "guiding" || mode === "done") && (reply || error)) {
-    card = (
-      <div className={`nora-card${mode === "done" ? " done" : ""}`}>
-        <div className="nora-card-head">
-          <NoraFace mood={mode === "done" ? "done" : "guiding"} />
-          <strong>{mode === "done" ? "All done!" : "Nora"}</strong>
-        </div>
-        <p className="nora-message">{error || reply?.message}</p>
-        {mode === "done" ? (
+  const message = error || reply?.message || "";
+  if (showingCard && message) {
+    if (mode === "done") {
+      card = (
+        <div className="nora-card done">
+          <div className="nora-card-head">
+            <NoraFace mood="done" />
+            <strong>All done!</strong>
+          </div>
+          <p className="nora-message">{message}</p>
           <button className="btn btn-primary btn-wide" onClick={stopHelping}>
             Close
           </button>
-        ) : (
+        </div>
+      );
+    } else if (collapsed) {
+      // A one-line strip; tap it to see the whole instruction again.
+      card = (
+        <button className="nora-card nora-card-mini" onClick={() => setCollapsed(false)} aria-label={`Show Nora's instruction: ${message}`}>
+          <NoraFace mood="guiding" size={30} />
+          <span>{message}</span>
+          <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M6 15l6-6 6 6" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </button>
+      );
+    } else {
+      card = (
+        <div className="nora-card compact">
+          <div className="nora-card-row">
+            <NoraFace mood="guiding" size={34} />
+            <p className="nora-message">{message}</p>
+          </div>
           <div className="nora-card-actions">
             <button className="btn" onClick={openSheet}>
               💬 Reply
@@ -412,10 +528,28 @@ export function Nora({ phoneRef }: Props) {
             <button className="btn" onClick={stopHelping}>
               Stop helping
             </button>
+            <button className="nora-collapse" aria-label="Make this smaller" onClick={() => setCollapsed(true)}>
+              <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </button>
           </div>
-        )}
-      </div>
-    );
+        </div>
+      );
+    }
+  }
+
+  // Keep the card off the highlight and the gesture, in the freest part of the screen.
+  let cardTop = 0;
+  if (card && layerSize.h) {
+    const zones: Zone[] = [];
+    if (highlight) {
+      zones.push({ left: highlight.left - 12, right: highlight.left + highlight.width + 12, top: highlight.top - 12, bottom: highlight.top + highlight.height + 12 });
+    }
+    if (showGuide) {
+      zones.push(...gestureZones({ gesture: showGuide.gesture, box: highlight, dragTo: showGuide.dragTo, label: showGuide.label, area: { w: showGuide.w, h: showGuide.h } }));
+    }
+    cardTop = placeCard(layerSize.h, layerSize.w, cardH, zones);
   }
 
   const hint = micProblem
@@ -435,6 +569,14 @@ export function Nora({ phoneRef }: Props) {
         />
       )}
 
+
+      {card && (
+        <div ref={cardRef} className={`nora-card-float${touching ? " faded" : ""}`} style={{ top: cardTop }}>
+          {card}
+        </div>
+      )}
+
+      {/* Drawn over the card, so the demonstration stays visible if they have to overlap. */}
       {showGuide && (
         <NoraGesture
           gesture={showGuide.gesture}
@@ -444,8 +586,6 @@ export function Nora({ phoneRef }: Props) {
           area={{ w: showGuide.w, h: showGuide.h }}
         />
       )}
-
-      {card && <div className={`nora-card-slot ${cardAtTop ? "top" : "bottom"}`}>{card}</div>}
 
       {sheetOpen && (
         <section className="nora-sheet" style={{ bottom: keyboard }} aria-label="Talk with Nora">

@@ -690,3 +690,86 @@
     transform: translate(var(--dx), var(--dy)) translate(-45%, -6%);
   }
 }
+
+/* ---------- Instruction card: placed in the freest spot, fades while touching, collapses ---------- */
+
+.nora-layer > .nora-card-float {
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  transition:
+    top 0.25s ease,
+    opacity 0.2s ease;
+}
+
+.nora-card-float.faded {
+  opacity: 0.15;
+}
+
+.nora-card.compact {
+  padding: 12px 14px;
+  gap: 10px;
+}
+
+.nora-card-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.nora-card-row .nora-face {
+  flex: none;
+  margin-top: 2px;
+}
+
+.nora-card-row .nora-message {
+  margin: 0;
+  flex: 1;
+}
+
+.nora-card.compact .nora-card-actions {
+  align-items: center;
+}
+
+.nora-collapse {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  border: none;
+  border-radius: 50%;
+  background: #f2f2f4;
+  color: #333;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nora-card.nora-card-mini {
+  width: 100%;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  font: inherit;
+  text-align: left;
+  color: #1b1b1b;
+}
+
+.nora-card-mini span {
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-weight: 700;
+}
+
+.nora-card-mini .nora-face {
+  flex: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nora-layer > .nora-card-float {
+    transition: opacity 0.2s ease;
+  }
+}
